@@ -34,6 +34,7 @@ pub enum ArgumentType {
     NewId,
     /// Vec<u8>
     Array,
+    ArrayU64,
     /// RawFd
     Fd,
 }
@@ -55,6 +56,7 @@ pub enum Argument {
     NewId(u32),
     /// Vec<u8>
     Array(Vec<u8>),
+    ArrayU64(Vec<u64>),
     /// RawFd
     Fd(RawFd),
 }
@@ -70,6 +72,7 @@ impl Argument {
             Argument::Object(_) => ArgumentType::Object,
             Argument::NewId(_) => ArgumentType::NewId,
             Argument::Array(_) => ArgumentType::Array,
+            Argument::ArrayU64(_) => ArgumentType::ArrayU64,
             Argument::Fd(_) => ArgumentType::Fd,
         }
     }
@@ -130,8 +133,8 @@ impl Message {
         }
 
         // Helper function to write byte arrays in payload
-        fn write_array_to_payload<'a>(
-            array: &[u8],
+        fn write_array_to_payload<'a, T>(
+            array: &[T],
             payload: &'a mut [u32],
         ) -> Result<&'a mut [u32], MessageWriteError> {
             let array_len = array.len();
@@ -144,7 +147,7 @@ impl Message {
             payload[0] = array_len as u32;
             let (buffer_slice, rest) = payload[1..].split_at_mut(word_len);
             unsafe {
-                ptr::copy(array.as_ptr(), buffer_slice.as_mut_ptr() as *mut u8, array_len);
+                ptr::copy(array.as_ptr(), buffer_slice.as_mut_ptr() as *mut T, array_len);
             }
             Ok(rest)
         }
@@ -174,6 +177,9 @@ impl Message {
                 Argument::Object(o) => payload = write_buf(o, old_payload)?,
                 Argument::NewId(n) => payload = write_buf(n, old_payload)?,
                 Argument::Array(ref a) => {
+                    payload = write_array_to_payload(&a, old_payload)?;
+                }
+                Argument::ArrayU64(ref a) => {
                     payload = write_array_to_payload(&a, old_payload)?;
                 }
                 Argument::Fd(fd) => {
@@ -209,17 +215,17 @@ impl Message {
         fds: &'b [RawFd],
     ) -> Result<(Message, &'a [u32], &'b [RawFd]), MessageParseError> {
         // helper function to read arrays
-        fn read_array_from_payload(
+        fn read_array_from_payload<T>(
             array_len: usize,
             payload: &[u32],
-        ) -> Result<(&[u8], &[u32]), MessageParseError> {
+        ) -> Result<(&[T], &[u32]), MessageParseError> {
             let word_len = array_len / 4 + if array_len % 4 != 0 { 1 } else { 0 };
             if word_len > payload.len() {
                 return Err(MessageParseError::MissingData);
             }
             let (array_contents, rest) = payload.split_at(word_len);
             let array =
-                unsafe { ::std::slice::from_raw_parts(array_contents.as_ptr() as *const u8, array_len) };
+                unsafe { ::std::slice::from_raw_parts(array_contents.as_ptr() as *const T, array_len) };
             Ok((array, rest))
         }
 
@@ -271,6 +277,12 @@ impl Message {
                             read_array_from_payload(front as usize, tail).map(|(v, rest)| {
                                 tail = rest;
                                 Argument::Array(v.into())
+                            })
+                        }
+                        ArgumentType::ArrayU64 => {
+                            read_array_from_payload(front as usize, tail).map(|(v, rest)| {
+                                tail = rest;
+                                Argument::ArrayU64(v.into())
                             })
                         }
                         ArgumentType::Fd => unreachable!(),
