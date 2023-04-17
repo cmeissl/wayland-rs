@@ -236,6 +236,7 @@ impl<D> InnerBackend<D> {
                             ObjectId { id: object_id.clone() },
                         );
                     }
+                    std::mem::drop(object);
                     // acquire the lock again and continue
                     state = self.state.lock().unwrap();
                     if is_destructor {
