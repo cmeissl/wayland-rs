@@ -184,7 +184,7 @@ expand_test!(destructor_cleanup, {
 
     // now destructors should be called
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
 
     assert!(server_data.0.load(Ordering::Acquire));
 });

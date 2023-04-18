@@ -90,7 +90,7 @@ expand_test!(protocol_error, {
     // post the error
     server.handle().post_error(oid, 42, CString::new("I don't like you.".as_bytes()).unwrap());
 
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
     let ret = client.prepare_read().unwrap().read();
 
     match ret {
@@ -128,7 +128,7 @@ expand_test!(client_wrong_id, {
     socket.flush().unwrap();
 
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
 
     // server should have killed us due to the error, but it might send us that error first
     let ret = socket.fill_incoming_buffers().and_then(|_| socket.fill_incoming_buffers());
@@ -152,7 +152,7 @@ expand_test!(client_wrong_opcode, {
     socket.flush().unwrap();
 
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
 
     // server should have killed us due to the error, but it might send us that error first
     let ret = socket.fill_incoming_buffers().and_then(|_| socket.fill_incoming_buffers());
@@ -176,7 +176,7 @@ expand_test!(client_wrong_sender, {
     socket.flush().unwrap();
 
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
 
     // server should have killed us due to the error, but it might send us that error first
     let ret = socket.fill_incoming_buffers().and_then(|_| socket.fill_incoming_buffers());

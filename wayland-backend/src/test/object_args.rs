@@ -212,7 +212,7 @@ expand_test!(create_objects, {
 
     client.flush().unwrap();
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
     client.prepare_read().unwrap().read().unwrap();
 
     assert!(server_data.0.load(Ordering::SeqCst));
@@ -476,7 +476,7 @@ expand_test!(new_id_null_and_non_null, {
 
     client.flush().unwrap();
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
     client.prepare_read().unwrap().read().unwrap();
 
     assert!(server_data.0.load(Ordering::SeqCst));

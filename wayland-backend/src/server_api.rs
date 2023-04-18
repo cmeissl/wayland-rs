@@ -502,8 +502,8 @@ impl<D> Backend<D> {
     ///
     /// If no client is specified, all pending events are flushed to all clients.
     #[inline]
-    pub fn flush(&mut self, client: Option<ClientId>) -> std::io::Result<()> {
-        self.backend.flush(client)
+    pub fn flush(&mut self, client: Option<ClientId>, data: &mut D) -> std::io::Result<()> {
+        self.backend.flush(client, data)
     }
 
     /// Returns a handle which represents the server side state of the backend.

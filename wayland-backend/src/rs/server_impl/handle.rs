@@ -53,7 +53,7 @@ impl<D> State<D> {
         }
     }
 
-    pub(crate) fn flush(&mut self, client: Option<ClientId>) -> std::io::Result<()> {
+    pub(crate) fn flush(&mut self, client: Option<ClientId>, _data: &mut D) -> std::io::Result<()> {
         if let Some(ClientId { id: client }) = client {
             match self.clients.get_client_mut(client) {
                 Ok(client) => client.flush(),

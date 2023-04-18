@@ -150,7 +150,7 @@ expand_test!(server_created_object, {
 
     client.flush().unwrap();
     server.dispatch_all_clients(&mut ()).unwrap();
-    server.flush(None).unwrap();
+    server.flush(None, &mut ()).unwrap();
     client.prepare_read().unwrap().read().unwrap();
 
     assert_eq!(client_data.0.load(Ordering::SeqCst), 2);

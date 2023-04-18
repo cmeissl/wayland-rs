@@ -56,8 +56,8 @@ impl<State: 'static> Display<State> {
     }
 
     /// Flush outgoing buffers into their respective sockets.
-    pub fn flush_clients(&mut self) -> std::io::Result<()> {
-        self.backend.flush(None)
+    pub fn flush_clients(&mut self, state: &mut State) -> std::io::Result<()> {
+        self.backend.flush(None, state)
     }
 
     /// Access the underlying [`Backend`] of this [`Display`]

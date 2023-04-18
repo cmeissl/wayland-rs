@@ -52,8 +52,8 @@ impl<D> InnerBackend<D> {
         })
     }
 
-    pub fn flush(&self, client: Option<ClientId>) -> std::io::Result<()> {
-        self.state.lock().unwrap().flush(client)
+    pub fn flush(&self, client: Option<ClientId>, data: &mut D) -> std::io::Result<()> {
+        self.state.lock().unwrap().flush(client, data)
     }
 
     pub fn handle(&self) -> Handle {

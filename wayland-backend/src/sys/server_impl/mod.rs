@@ -354,7 +354,7 @@ impl<D> InnerBackend<D> {
         })
     }
 
-    pub fn flush(&mut self, client: Option<ClientId>) -> std::io::Result<()> {
+    pub fn flush(&mut self, client: Option<ClientId>, data: &mut D) -> std::io::Result<()> {
         let mut state = self.state.lock().unwrap();
         if let Some(ClientId { id: client_id }) = client {
             if client_id.alive.load(Ordering::Acquire) {
@@ -368,6 +368,11 @@ impl<D> InnerBackend<D> {
                     ffi_dispatch!(WAYLAND_SERVER_HANDLE, wl_display_flush_clients, state.display);
                 },
             );
+        }
+        let pending_destructors =
+            std::mem::take(&mut self.state.lock().unwrap().pending_destructors);
+        for (object, client_id, object_id) in pending_destructors {
+            object.destroyed(data, client_id, object_id);
         }
         Ok(())
     }
