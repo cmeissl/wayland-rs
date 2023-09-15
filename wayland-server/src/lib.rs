@@ -294,6 +294,15 @@ impl<I: Resource> Weak<I> {
         I::from_id(&d_handle, self.id.clone())
     }
 
+    /// Check if this resource is still alive
+    #[inline]
+    pub fn is_alive(&self) -> bool {
+        let Some(handle) = self.handle.upgrade() else {
+            return false;
+        };
+        handle.object_info(self.id.clone()).is_ok()
+    }
+
     /// The underlying [`ObjectId`]
     pub fn id(&self) -> ObjectId {
         self.id.clone()

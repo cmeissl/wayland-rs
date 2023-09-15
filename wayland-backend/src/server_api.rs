@@ -244,6 +244,7 @@ impl WeakHandle {
     /// Try to upgrade this weak handle to a [`Handle`]
     ///
     /// Returns `None` if the associated backend was already dropped.
+    #[inline]
     pub fn upgrade(&self) -> Option<Handle> {
         self.handle.upgrade().map(|handle| Handle { handle })
     }
