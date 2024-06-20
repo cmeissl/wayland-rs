@@ -239,24 +239,7 @@ impl InnerBackend {
                 wl_log_trampoline_to_rust_client
             );
         }
-        let display_alive = Arc::new(AtomicBool::new(true));
-        Ok(Self {
-            inner: Arc::new(Inner {
-                state: Mutex::new(ConnectionState {
-                    display,
-                    evq: std::ptr::null_mut(),
-                    display_id: InnerObjectId {
-                        id: 1,
-                        ptr: display as *mut wl_proxy,
-                        alive: Some(display_alive),
-                        interface: &WL_DISPLAY_INTERFACE,
-                    },
-                    last_error: None,
-                    known_proxies: HashSet::new(),
-                }),
-                dispatch_lock: Mutex::new(Dispatcher),
-            }),
-        })
+        Ok(unsafe { InnerBackend::from_foreign_display(display) })
     }
 
     pub unsafe fn from_foreign_display(display: *mut wl_display) -> Self {
